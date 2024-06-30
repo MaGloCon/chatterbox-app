@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, ImageBackground, TextInput, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ImageBackground, TextInput, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 
 // Define the Start component that takes navigation prop for navigating between screens
 const Start = ({ navigation }) => {
@@ -47,6 +47,10 @@ const Start = ({ navigation }) => {
                     <Text style={styles.buttonText}>Start Chatting</Text>
                 </TouchableOpacity>
             </View>
+            {Platform.OS === "ios"
+                ? <KeyboardAvoidingView behavior="padding" />
+                : null
+            }
         </ImageBackground>
     )
 };
