@@ -9,11 +9,14 @@ const Chat = ({ route, navigation }) => {
   // State for storing chat messages
   const [messages, setMessages] = useState([]);
 
-  // Append new messages to the existing messages on send
+  
   const onSend = (newMessages) => {
+    // Append new messages to the previous messages
     setMessages((previousMessages) =>
       GiftedChat.append(previousMessages, newMessages)
     );
+    // Announce the new message for screen reader users
+    AccessibilityInfo.announceForAccessibility("New message sent.");
   };
 
   // Customize speech bubble

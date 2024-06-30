@@ -10,6 +10,14 @@ import {
   Platform,
 } from "react-native";
 
+// Custom color names for accessibility labels
+const colorNames = {
+  "#090C08": "Black",
+  "#474056": "Purple Taupe",
+  "#8A95A5": "Cool Grey",
+  "#B9C6AE": "Laurel Green",
+};
+
 const Start = ({ navigation }) => {
   // State for storing user's name and selected background color
   const [name, setName] = useState("");
@@ -31,12 +39,14 @@ const Start = ({ navigation }) => {
           value={name}
           onChangeText={setName}
           placeholder="Your Name"
+          accessibilityLabel="Input your name"
+          accessibilityHint="Type your name here to be used in chat"
         />
         <View style={styles.chooseBackgroundContainer}>
           <Text style={styles.chooseBackgroundText}>
             Choose Background Color:
           </Text>
-          <View style={styles.colorOptions}>
+          <View style={styles.colorOptions} accessibilityRole="radiogroup">
             {colors.map((color, index) => (
               <TouchableOpacity // TouchableOpacity for each color option
                 key={index}
@@ -46,6 +56,9 @@ const Start = ({ navigation }) => {
                   background === color && styles.selected,
                 ]}
                 onPress={() => setBackground(color)}
+                accessibilityLabel={`${colorNames[color]} color`} // Use custon color names from the mapping
+                accessibilityRole="radio"
+                accessibilityState={{ selected: background === color }}
               />
             ))}
           </View>
@@ -55,6 +68,8 @@ const Start = ({ navigation }) => {
           onPress={() =>
             navigation.navigate("Chat", { name: name, background: background })
           }
+          accessibilityLabel="Start chatting button"
+          accessibilityHint="Navigates to the chat screen"
         >
           <Text style={styles.buttonText}>Start Chatting</Text>
         </TouchableOpacity>
