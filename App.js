@@ -1,22 +1,49 @@
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { LogBox } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+LogBox.ignoreLogs(["AsyncStorage has been extracted from"]);
 
-import Start from "./components/Start";
-import Chat from "./components/Chat";
+import Start from './components/Start';
+import Chat from './components/Chat';
 
 // Create a Stack Navigator
 const Stack = createNativeStackNavigator();
 
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+
 //Main App component
 const App = () => {
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyA0shx6YZVPnP_Iy2boC9CEWOieXzUFkkg",
+    authDomain: "chatterbox-app-68166.firebaseapp.com",
+    projectId: "chatterbox-app-68166",
+    storageBucket: "chatterbox-app-68166.appspot.com",
+    messagingSenderId: "592659635009",
+    appId: "1:592659635009:web:a1cd8dba4251f1e8bc5fc0"
+  };
+  
+  const app = initializeApp(firebaseConfig); //Initialize Firebase
+  const db = getFirestore(app); //Initialize Cloud Firestore and get a reference to the service
+
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Chatterbox">
-        <Stack.Screen name="Start" component={Start} />
-        <Stack.Screen name="Chat" component={Chat} />
+      <Stack.Navigator
+        initialRouteName="Chatterbox"
+      >
+        <Stack.Screen
+          name="Start"
+          component={Start}
+        />
+        <Stack.Screen
+          name="Chat"
+        >
+          {props => <Chat {...props} db={db} />}
+        </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
-};
+}
 
 export default App;
