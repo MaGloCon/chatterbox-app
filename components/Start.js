@@ -8,7 +8,9 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert, 
 } from "react-native";
+import { getAuth, signInAnonymously } from "firebase/auth";
 
 // Custom color names for accessibility labels
 const colorNames = {
@@ -19,9 +21,26 @@ const colorNames = {
 };
 
 const Start = ({ navigation }) => {
+  // Firebase authentication
+  const auth = getAuth();
+
+  // Anonymous sign in 
+  const signInUser = () => {
+    signInAnonymously(auth)
+    .then(result => {
+      navigation.navigate("Chat", { name: name, background: background, userID: result.user.uid });
+      Alert.alert("Signed in Successfully!");
+    })
+    .catch((error) => {
+      Alert.alert("Unable to sign in, try later again.");
+    })
+  }
+
   // State for storing user's name and selected background color
   const [name, setName] = useState("");
   const [background, setBackground] = useState("");
+
+
   // Array of background color options
   const colors = ["#090C08", "#474056", "#8A95A5", "#B9C6AE"];
 
@@ -65,11 +84,9 @@ const Start = ({ navigation }) => {
         </View>
         <TouchableOpacity
           style={styles.button}
-          onPress={() =>
-            navigation.navigate("Chat", { name: name, background: background })
-          }
           accessibilityLabel="Start chatting button"
           accessibilityHint="Navigates to the chat screen"
+          onPress={signInUser}
         >
           <Text style={styles.buttonText}>Start Chatting</Text>
         </TouchableOpacity>

@@ -11,6 +11,9 @@ const Stack = createNativeStackNavigator();
 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+
 
 //Main App component
 const App = () => {
@@ -26,7 +29,10 @@ const App = () => {
   
   const app = initializeApp(firebaseConfig); //Initialize Firebase
   const db = getFirestore(app); //Initialize Cloud Firestore and get a reference to the service
-
+  const auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+  });
+  
   return (
     <NavigationContainer>
       <Stack.Navigator
