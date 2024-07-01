@@ -10,9 +10,14 @@ const Chat = ({ route, navigation, db}) => {
   const onSend = (newMessages) => {
     // Append new messages to the previous messages
     addDoc(collection(db, "messages"), newMessages[0])
-  
-    // Announce the new message for screen reader users
-    AccessibilityInfo.announceForAccessibility("New message sent.");
+    .then(() => {
+      // Announce the new message for screen reader users only if sending was successful
+      AccessibilityInfo.announceForAccessibility("New message sent.");
+    })
+    .catch((error) => {
+      // Handle any errors here, such as by announcing the failure to send the message
+      console.error("Error sending message: ", error);
+    });
   };
 
   // Customize speech bubble
@@ -64,10 +69,7 @@ const Chat = ({ route, navigation, db}) => {
         messages={messages}
         renderBubble={renderBubble}
         onSend={(messages) => onSend(messages)}
-        user={{
-          _id: userID,
-          name
-        }}
+        user={{ _id: userID, name }}
       />
       {Platform.OS === "android" ? (
         // Use KeyboardAvoidingView to adjust the view when the keyboard is open
