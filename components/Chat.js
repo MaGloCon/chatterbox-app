@@ -3,24 +3,24 @@ import { StyleSheet, View, KeyboardAvoidingView, Platform, AccessibilityInfo } f
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
 import { collection, addDoc, onSnapshot, orderBy, query } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ActionSheetProvider, connectActionSheet } from "@expo/react-native-action-sheet";
+import { getStorage } from "firebase/storage";
+import CustomActions from "./CustomActions";
 
-const Chat = ({ route, navigation, db, isConnected }) => {
+const Chat = ({ route, navigation, db, isConnected, storage }) => {
   const { name, background, userID } = route.params;
   const [messages, setMessages] = useState([]);
 
   const onSend = (newMessages) => {
-    // Append new messages to the previous messages
-  addDoc(collection(db, "messages"), newMessages[0])
-    .then(() => {
-      // Announce the new message for screen reader users only if sending was successful
-      AccessibilityInfo.announceForAccessibility("New message sent.");
-    })
-    .catch((error) => {
-      console.error("Error sending message: ", error);
-    });
-};
+    addDoc(collection(db, "messages"), newMessages[0])
+      .then(() => {
+        AccessibilityInfo.announceForAccessibility("New message sent.");
+      })
+      .catch((error) => {
+        console.error("Error sending message: ", error);
+      });
+  };
 
-  // Customize speech bubble
   const renderBubble = (props) => {
     return (
       <Bubble
@@ -37,40 +37,38 @@ const Chat = ({ route, navigation, db, isConnected }) => {
     );
   };
 
-  // Prevent rendering of InputToolbar when offline
   const renderInputToolbar = (props) => {
     if (isConnected) return <InputToolbar {...props} />;
     else return null;
   };
 
-  // Set the navigation title to the user's name upon component mount
+  const renderCustomActions = (props) => {
+    return <CustomActions storage={storage} {...props} />;
+  };
+
   useEffect(() => {
     navigation.setOptions({ title: name });
   }, []);
 
-  // Fetch messages from Firestore
-  // Messages database
   let unsubMessages;
   useEffect(() => {
     if (isConnected === true) {
-        // unregister current onSnapshot() listener to avoid registering multiple listeners when useEffect code is re-executed.
-        if (unsubMessages) unsubMessages();
-        unsubMessages = null;
-        const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
-        unsubMessages = onSnapshot(q, (documentSnapshot) => {
-            let newMessages = [];
-            documentSnapshot.forEach(doc => {
-              newMessages.push({ 
-                id: doc.id, 
-                ...doc.data(),
-                createdAt: new Date(doc.data().createdAt.toMillis())
-              })
-            });
-            cacheMessagesHistory(newMessages);
-            setMessages(newMessages);
+      if (unsubMessages) unsubMessages();
+      unsubMessages = null;
+      const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+      unsubMessages = onSnapshot(q, (documentSnapshot) => {
+        let newMessages = [];
+        documentSnapshot.forEach(doc => {
+          newMessages.push({ 
+            id: doc.id, 
+            ...doc.data(),
+            createdAt: new Date(doc.data().createdAt.toMillis())
+          })
         });
+        cacheMessagesHistory(newMessages);
+        setMessages(newMessages);
+      });
     } else loadCachedMessages();
-    // Clean up code
     return () => {
       if (unsubMessages) unsubMessages();
     }
@@ -90,18 +88,21 @@ const Chat = ({ route, navigation, db, isConnected }) => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: background }]}>
-      <GiftedChat
-        messages={messages}
-        renderBubble={renderBubble}
-        onSend={(messages) => onSend(messages)}
-        user={{ userID, name }}
-      />
-      {Platform.OS === "android" ? (
-        // Use KeyboardAvoidingView to adjust the view when the keyboard is open
-        <KeyboardAvoidingView behavior="height" />
-      ) : null}
-    </View>
+    <ActionSheetProvider>
+      <View style={[styles.container, { backgroundColor: background }]}>
+        <GiftedChat
+          messages={messages}
+          renderBubble={renderBubble}
+          renderInputToolbar={renderInputToolbar}
+          renderActions={renderCustomActions}
+          onSend={(messages) => onSend(messages)}
+          user={{ userID, name }}
+        />
+        {Platform.OS === "android" ? (
+          <KeyboardAvoidingView behavior="height" />
+        ) : null}
+      </View>
+    </ActionSheetProvider>
   );
 };
 
@@ -111,4 +112,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Chat;
+export default connectActionSheet(Chat);

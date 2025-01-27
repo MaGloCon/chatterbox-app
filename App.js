@@ -3,6 +3,8 @@ import { LogBox, Alert } from 'react-native';
 import { useNetInfo } from "@react-native-community/netinfo";
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { getStorage } from "firebase/storage";
 LogBox.ignoreLogs(["AsyncStorage has been extracted from"]);
 
 import Start from './components/Start';
@@ -16,11 +18,11 @@ import { getFirestore, disableNetwork, enableNetwork } from "firebase/firestore"
 // import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
 // import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
-
-//Main App component
+// Main App component
 const App = () => {
   // Check network connection status
   const connectionStatus = useNetInfo();
+
   // Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyA0shx6YZVPnP_Iy2boC9CEWOieXzUFkkg",
@@ -31,11 +33,9 @@ const App = () => {
     appId: "1:592659635009:web:a1cd8dba4251f1e8bc5fc0"
   };
   
-  const app = initializeApp(firebaseConfig); //Initialize Firebase
-  const db = getFirestore(app); //Initialize Cloud Firestore and get a reference to the service
-  // const auth = initializeAuth(app, {
-  //   persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-  // });
+  const app = initializeApp(firebaseConfig); // Initialize Firebase
+  const db = getFirestore(app); // Initialize Cloud Firestore and get a reference to the service
+  const storage = getStorage(app); // Initialize Firebase Storage
 
   useEffect(() => {
     if (connectionStatus.isConnected === false) {
@@ -49,7 +49,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Chatterbox"
+        initialRouteName="Start"
       >
         <Stack.Screen
           name="Start"
@@ -62,6 +62,7 @@ const App = () => {
             <Chat 
               isConnected={connectionStatus.isConnected} 
               db={db} 
+              storage={storage} 
               {...props}
             />
           )}
